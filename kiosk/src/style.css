@@ -1,0 +1,13 @@
+@import "tailwindcss";
+
+/* Additional base styles */
+* {
+  -webkit-tap-highlight-color: transparent;
+}
+
+body {
+  margin: 0;
+  overflow: hidden; /* Prevent scrolling in kiosk */
+  user-select: none; /* Prevent text selection */
+  -webkit-user-select: none;
+}
