@@ -3,7 +3,6 @@ name: Deploy Kiosk to Pi
 on:
   push:
     branches: [ release ]
-  workflows_dispatch:
 
 jobs:
   build-and-deploy:
