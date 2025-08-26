@@ -1,0 +1,54 @@
+name: Deploy Kiosk to Pi
+
+on:
+  push:
+    branches: [ release ]
+  workflows_dispatch:
+
+jobs:
+  build-and-deploy:
+    runs-on: ubuntu-latest
+
+    steps:
+      - name: Checkout release branch
+        uses: actions/checkout@v4
+
+      - name: Setup node
+        uses: actions/setup-node@v4
+        with:
+          node-version: '18'
+          cache: 'npm'
+
+      - name: Install dependencies
+        run: npm ci
+
+      - name: Build app
+        run: npm run build
+
+      - name: Create deployment package
+        run: |
+          mkdir -p deployment/kiosk
+          mkdir -p deployment/scripts
+
+          cp -r dist/* deployment/kiosk/
+
+          cp pi-setup/setup-kiosk.sh deployment/scripts/
+
+          echo "Build: $(date -u +%Y%m%d%H%M%S)" > deployment/kiosk/VERSION.txt
+          echo "Commit: ${{ github.sha }}" >> deployment/kiosk/VERSION.txt
+          echo "Branch: ${{ github.ref }}" >> deployment/kiosk/VERSION.txt
+
+      - name: Deploy to kiosk-build branch
+        uses: peaceiris/actions-gh-pages@v3
+        with:
+          github_token: ${{ secrets.GITHUB_TOKEN }}
+          publish_dir: ./deployment/kiosk
+          publish_branch: kiosk-build
+          force_orphan: true
+          commit_message: 'Deploy release ${{ github.sha }}'
+
+      - name: Upload build artifact
+        uses: actions/upload-artifact@v3
+        with:
+          name: kiosk-deployment
+          path: ./deployment/
